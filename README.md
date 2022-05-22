@@ -14,4 +14,6 @@ Repository for the first part of Econometrics II course at CERGE for summer seme
 - [R for Data Science](https://r4ds.had.co.nz/) - Data manipulation, analysis, and visualisation in Tidyverse style.
 - [Rstudio cheatsheets](https://www.rstudio.com/resources/cheatsheets/)
 - [Markdown guide](https://www.markdownguide.org/basic-syntax/)
+- [Introduction to Econometrics with R](https://scpoecon.github.io/ScPoEconometrics/)
+
 
