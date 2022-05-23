@@ -1,0 +1,133 @@
+---
+title: "Exercice session 1"
+author: "Martin Kosík"
+date: "May 23, 2022"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## R Fundamentals
+### Packages
+You can install new packages using `install.packages()` function.
+The installed packages are loaded with `library()`.
+
+```{r warning=FALSE}
+#install.packages("here", repos = "http://cran.us.r-project.org")
+library(here)
+```
+
+
+### Objects
+Objects can be assigned with either `<-` or `=` operators. They have exatly the same effect, it is just the matter of style preference. 
+```{r}
+string_object_1 <- "hello_world!"
+string_object_2 = "hello_world!"
+
+string_object_1
+string_object_2
+```
+Objects can be removed with `rm()` function.
+
+```{r}
+rm(string_object_1)
+#string_object_1
+```
+
+To remove all objects, use `rm(list=ls())`. 
+
+
+### Vectors
+A sequence of objects of the same type (e.g., string, interger, float, boolean,  factor) forms a vector. 
+
+```{r}
+string_vector <- c("one", "two", "three")
+integer_vector <- 1:3  # same as c(1, 2, 3)
+float_vector <- c(1.0, 2.0, 3.0)
+boolean_vector <- c(FALSE, TRUE, FALSE) # or alternatively c(F, T, F)
+```
+
+The n-th element of vector x is accessed by `x[n]`
+```{r}
+string_vector[2]
+```
+
+### Dataframes
+The vectors of the same length can be combined into a Dataframe
+```{r}
+example_df <- data.frame(first_column = string_vector, second_column = integer_vector, third_column = float_vector)
+example_df
+```
+There are several ways how to access a specific vector (column) of a dataframe
+```{r}
+example_df[ ,2]
+example_df[ ,'second_column']
+example_df$second_column
+
+```
+You can also access multiple columns passing a vector with column names, column indices, or boolean vector. The output is then a dataframe.
+```{r}
+example_df[ ,c(2, 3)]
+example_df[ ,c('second_column', 'third_column')]
+example_df[ ,c(FALSE, TRUE, TRUE)]
+
+```
+
+The same applies to accessing rows
+```{r}
+example_df[c(2, 3), ]
+example_df[c(FALSE, TRUE, TRUE), ]
+
+```
+
+### Lists
+Lists are objects that can contain any kind of objects in them (strings, floats, booleans, another lists, ...)
+
+```{r}
+cool_list <- list(55, 'cool item', list(TRUE, 6.626262))
+cool_list
+```
+
+
+## Basic econometrics in R
+To estimate basic linear regression of form $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon$ use `lm(y ~ x_1 + x_2, data)`. 
+```{r}
+data("swiss")
+basic_regression <- lm(Infant.Mortality ~ Fertility + Education +  Catholic + Agriculture, data = swiss)
+summary(basic_regression)
+```
+
+By default, `lm()` outputs standard errors assuming homoskedasticity. You almost never want to use them. 
+
+There are several ways how to obtain heteroskedasticity-robust SE. 
+
+First, `estimatr` package has `lm_robust()` function whose `se_type` argument can be either "classical", "HC0", "HC1" (stata), "HC2", or "HC3".
+
+See [this](https://declaredesign.org/r/estimatr/articles/mathematical-notes.html) for the mathematical details.
+```{r}
+# install.packages('estimatr', repos = "http://cran.us.r-project.org")
+library(estimatr)
+fancy_regression <- lm_robust(Infant.Mortality ~ Fertility + Education +  Catholic + Agriculture, data = swiss, se_type = "HC1")
+summary(fancy_regression)
+```
+
+Alternatively, in `fixest` package you can use `feols()` function and passing in `vcov = "hetero"` to get HC0 (White) SE. Additionally, you can also apply the small sample correction by passing in `ssc = ssc(adj = TRUE)`.
+Learn more [here](https://lrberge.github.io/fixest/articles/standard_errors.html) 
+```{r}
+# install.packages('fixest', repos = "http://cran.us.r-project.org")
+library(fixest)
+even_fancier_regression <- feols(Infant.Mortality ~ Fertility + Education +  Catholic + Agriculture, data = swiss, vcov = "hetero", ssc = ssc(adj = TRUE))
+summary(even_fancier_regression)
+
+```
+
+Both packages also support SE clustering (more on that in some future ES).
+
