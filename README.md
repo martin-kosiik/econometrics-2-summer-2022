@@ -15,5 +15,6 @@ Repository for the first part of Econometrics II course at CERGE for summer seme
 - [Rstudio cheatsheets](https://www.rstudio.com/resources/cheatsheets/)
 - [Markdown guide](https://www.markdownguide.org/basic-syntax/)
 - [Introduction to Econometrics with R](https://scpoecon.github.io/ScPoEconometrics/)
+- [Causal Inference: The Mixtape](https://mixtape.scunning.com/) - introductory book on causal inference with code examples from Stata, R, and Python
 
 
