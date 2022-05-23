@@ -6,7 +6,7 @@ Repository for the first part of Econometrics II course at CERGE for summer seme
   
   |    | Setup pdf | Raw Rmd | Rendered Rmd | R script | All (in zip file) |
   |------|-----------|---------|--------------|----------|-------------------|
-  | ES 1 |     [x](https://www.google.cz/)     |   [x](https://www.google.cz/)       |              |          |                   |
+  | ES 1 |        |   [x](https://github.com/martin-kosiik/econometrics-2-summer-2022/blob/main/ES1/ES1.Rmd)       |    [x](https://htmlpreview.github.io/?https://github.com/martin-kosiik/econometrics-2-summer-2022/blob/main/ES1/ES1.html)          |          |     [x](https://github.com/martin-kosiik/econometrics-2-summer-2022/blob/main/ES1/ES1.rar)              |
 
 </center>
   
