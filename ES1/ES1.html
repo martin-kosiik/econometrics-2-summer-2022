@@ -421,6 +421,43 @@ summary(even_fancier_regression)</code></pre>
 ## RMSE: 2.51011   Adj. R2: 0.168918</code></pre>
 <p>Both packages also support SE clustering (more on that in some future ES).</p>
 </div>
+<div id="inroduction-to-tidyverse" class="section level2">
+<h2>Inroduction to Tidyverse</h2>
+<p>The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.</p>
+<p>A common feature of most tidyverse is that they take the dataframe as the first argument.</p>
+<p>Here is a comparison of a few common operations done in tidyverse and base R (taken from <a href="https://dplyr.tidyverse.org/articles/base.html">here</a>). Also notice that</p>
+<pre class="r"><code>library(tidyverse)
+# Subseting dataframe
+# Tidyverse
+swiss_filter &lt;- filter(swiss, Catholic &lt; 5)
+# Base R
+swiss_filter &lt;- swiss[which(swiss$Catholic &lt; 5), , drop = FALSE]
+
+
+# Order by a column value
+# Tidyverse
+swiss_order &lt;- arrange(swiss, Catholic)
+# Base R
+swiss_order &lt;-  swiss[order(swiss$Catholic), , drop = FALSE]
+
+# Create a new column
+swiss_new_col &lt;- mutate(swiss, new_col = Examination + Education)
+# Base R
+swiss_new_col &lt;- swiss
+swiss_new_col$new_col &lt;- swiss_new_col$Examination + swiss_new_col$Education</code></pre>
+<p>Another important feature of Tidyverse is the use of pipes ( %&gt;% ). It does have only stylistic function (i.e., it makes the code more readable).</p>
+<p>The pipe ( %&gt;% ) makes the object before it the first argument of the function after it. For example</p>
+<pre class="r"><code>swiss_filter &lt;- swiss %&gt;%  filter(Catholic &lt; 5)</code></pre>
+<p>What?? That’s it???!!! Why would anyone want to use it?</p>
+<p>Well suppose you wanted several operations on the dataframe. Without the pipe you could write</p>
+<pre class="r"><code>swiss_final &lt;- mutate( arrange( filter(swiss, Catholic &lt; 5), Catholic), new_col = Examination + Education)</code></pre>
+<p>This looks rather chaotic and messy. But with pipes the same expression now becomes</p>
+<pre class="r"><code>swiss_final &lt;- swiss %&gt;% 
+  filter(Catholic &lt; 5) %&gt;% 
+  arrange(Catholic) %&gt;% 
+  mutate(new_col = Examination + Education)</code></pre>
+<p>This, arguably, looks much more readable. We see that first we apply filter then arrange and then mutate.</p>
+</div>
 
 
 

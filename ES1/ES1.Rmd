@@ -131,3 +131,60 @@ summary(even_fancier_regression)
 
 Both packages also support SE clustering (more on that in some future ES).
 
+
+## Inroduction to Tidyverse
+The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.
+
+A common feature of most tidyverse is that they take the dataframe as the first argument. 
+
+Here is a comparison of a few common operations done in tidyverse and base R (taken from [here](https://dplyr.tidyverse.org/articles/base.html)).
+Also notice that 
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+# Subseting dataframe
+# Tidyverse
+swiss_filter <- filter(swiss, Catholic < 5)
+# Base R
+swiss_filter <-	swiss[which(swiss$Catholic < 5), , drop = FALSE]
+
+
+# Order by a column value
+# Tidyverse
+swiss_order <- arrange(swiss, Catholic)
+# Base R
+swiss_order <-	swiss[order(swiss$Catholic), , drop = FALSE]
+
+# Create a new column
+swiss_new_col <- mutate(swiss, new_col = Examination + Education)
+# Base R
+swiss_new_col <- swiss
+swiss_new_col$new_col <- swiss_new_col$Examination + swiss_new_col$Education
+
+```
+
+
+
+Another important feature of Tidyverse is the use of pipes ( %>% ). It does have only stylistic function (i.e., it makes the code more readable).
+
+The pipe ( %>% ) makes the object before it the first argument of the function after it. For example
+
+```{r}
+swiss_filter <- swiss %>%  filter(Catholic < 5)
+
+```
+
+What?? That's it???!!! Why would anyone want to use it?
+
+Well suppose you wanted several operations on the dataframe. Without the pipe you could write
+```{r}
+swiss_final <- mutate( arrange( filter(swiss, Catholic < 5), Catholic), new_col = Examination + Education)
+```
+This looks rather chaotic and messy. But with pipes the same expression now becomes
+```{r}
+swiss_final <- swiss %>% 
+  filter(Catholic < 5) %>% 
+  arrange(Catholic) %>% 
+  mutate(new_col = Examination + Education)
+```
+This, arguably, looks much more readable. We see that first we apply filter then arrange and then mutate. 
+
