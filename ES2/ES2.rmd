@@ -1,7 +1,7 @@
 ---
-title: "ES1"
+title: "ES2"
 author: "Martin Kosík"
-date: "4 6 2022"
+date: "June 2022"
 output: html_document
 ---
 
@@ -16,7 +16,7 @@ library(fixest)
 Load and inspect data
 ```{r}
 data("Guns")
-Guns
+head(Guns)
 ```
 
 ## 1)
