@@ -1,0 +1,179 @@
+---
+title: "ES1"
+author: "Martin Kosík"
+date: "4 6 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Uncomment if AER not installed
+#install.packages("AER")
+library(AER)
+library(fixest)
+```
+
+Load and inspect data
+```{r}
+data("Guns")
+Guns
+```
+
+## 1)
+
+```{r}
+years  <- length(levels(Guns$year))
+years
+states <- length(levels(Guns$state))
+states
+ifelse(length(Guns$year)==years*states, "Panel is balanced", "Panel is unbalanced")
+
+```
+
+## 2)
+Pooled OLS with homoskedastic SE
+```{r}
+pooled_ols_homosk <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns)
+summary(pooled_ols_homosk)
+```
+
+
+## 2)
+Pooled OLS with heteroskedastic SE
+```{r}
+pooled_ols_heterosk <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns,
+                           vcov = "hetero", ssc = ssc(adj = TRUE))
+summary(pooled_ols_heterosk)
+```
+
+Pooled OLS with heteroskedastic SE
+```{r}
+pooled_ols_cluster <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns,
+                           ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
+summary(pooled_ols_cluster)
+```
+
+# 5)
+
+```{r}
+# One-way Fixed Effects 
+fe_one <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male | state, data = Guns,
+                           ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
+
+# Least Square Dummy Variable Approach
+LSDV <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male + state, data = Guns,
+                           ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
+
+
+ifelse(all.equal(fe_one$coefficients, LSDV$coefficients[2:(length(fe_one$coefficients)+1)]), "Coefficients are the same",
+       "Coefficients are different")
+
+# you can also print them
+```
+
+
+We can test the joint significance of the fixed effects using F-statistic
+$$F = \frac{(SSR_{\text{restricted}} - SSR_{\text{unrestricted}})/q}{SSR_{\text{unrestricted}} / (n-k-1)}$$
+
+
+```{r}
+#library(plm)
+#install.packages('plm')
+#pFtest(fe_one, pooled_ols_homosk)
+
+#fe_one$nobs
+#fe_one$ssr
+
+f_test <- function(restr_model, unrest_model){
+ # q <-  unrest_model$fixef_sizes
+  q <-  unrest_model$nparams - restr_model$nparams
+  k <- unrest_model$nparams # this includes intercept
+  n <- unrest_model$nobs
+  
+  f_stat <- (restr_model$ssr - unrest_model$ssr)/unrest_model$ssr * ((n - k ))/( q)
+  p_val <- pf(f_stat, df1 = q, df2 = n - k, lower.tail = FALSE)
+  
+  results <- c(f_stat, p_val)
+  names(results) <- c('F-stat', 'p-value')
+  return(results)
+}
+
+f_test(pooled_ols_cluster, fe_one)
+
+
+```
+
+We reject the null.
+
+
+## 7)
+```{r}
+fe_twoway <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male | state + year, data = Guns,
+                           ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
+
+f_test(fe_one, fe_twoway)
+
+
+```
+
+
+## 8)
+Now we will see some Tidyverse magic
+```{r}
+library(tidyverse)
+
+Guns_between <- Guns %>% 
+  mutate(law = (law == "yes") * 1) %>% 
+  group_by(state) %>% 
+  summarize_if(is.numeric, mean)
+
+Guns_between
+```
+
+```{r}
+between <- lm(log(violent) ~ law + density + income + population + afam + cauc + male, data = Guns_between)
+
+# Obtaining theta
+RSS.between <- sum(resid(between)^2)
+RSS.within <- sum(resid(fe_one)^2)
+theta <- (states-7-1)*RSS.within/((years*states-states-7-1)*(RSS.between))
+print(theta)
+
+```
+
+
+
+```{r}
+library(plm)
+# RE transformed dataset
+Guns_RE <- with(Guns %>% mutate(law =(law == "yes")), data.frame(y = log(violent)-(1-sqrt(theta))*ave(log(violent), state), law = law - (1-sqrt(theta))*ave(law, state),
+           density = density - (1-sqrt(theta))*ave(density, state), income = income - (1-sqrt(theta))*ave(income, state),
+            population = population -(1-sqrt(theta))*ave(population, state), afam = afam -(1-sqrt(theta))*ave(afam, state),
+            cauc = cauc - (1-sqrt(theta))*ave(cauc, state),  male = male - (1-sqrt(theta))*ave(male, state)))
+
+
+re_m <-lm(y~ law + density + income + population + afam + cauc + male, data = Guns_RE)
+summary(re_m)
+
+# One-way Random Effects model
+re <- plm(log(violent) ~ law + density + income + population + afam + cauc + male, data = Guns,
+              index = c("state"), model = "random")
+summary(re)
+
+```
+
+```{r}
+pols <- plm(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns,
+            index = c("state", "year"), model = "pooling")
+
+fe_one <- plm(log(violent) ~ I(law == "yes") + density + income + population + afam + cauc + male, data = Guns,
+          index = c("state", "year"), model = "within")
+
+#  Breusch-Pagan Lagrange Multiplier for random effects
+plmtest(pols, type=c("bp"))
+
+# Hausman test for random vs fixed effects
+phtest(fe_one, re)
+
+```
+
