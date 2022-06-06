@@ -18,4 +18,4 @@ Repository for the first part of Econometrics II course at CERGE for summer seme
 - [Introduction to Econometrics with R](https://scpoecon.github.io/ScPoEconometrics/)
 - [Causal Inference: The Mixtape](https://mixtape.scunning.com/) - introductory book on causal inference with code examples from Stata, R, and Python
 
-
+If you have trouble installing R and RStudio on your computer you can use [RStudio Cloud](https://rstudio.cloud/) which runs from browser (registration need - for free with 1 GB RAM).
