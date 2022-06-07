@@ -19,13 +19,13 @@ knitr::opts_chunk$set(echo = TRUE)
 You can install new packages using `install.packages()` function. The installed packages are loaded with `library()`.
 
 ```{r warning=FALSE}
-#install.packages("here", repos = "http://cran.us.r-project.org")
+#install.packages("here")
 library(here)
 ```
 
 ### Objects
 
-Objects can be assigned with either `<-` or `=` operators. They have exatly the same effect, it is just the matter of style preference.
+Objects can be assigned with either `<-` or `=` operators. They have exactly the same effect, it is just the matter of style preference.
 
 ```{r}
 string_object_1 <- "hello_world!"
@@ -40,6 +40,10 @@ Objects can be removed with `rm()` function.
 ```{r}
 rm(string_object_1)
 #string_object_1
+```
+
+```{r}
+rm(list = c('string_object_1', 'string_object_2'))
 ```
 
 To remove all objects, use `rm(list=ls())`.
@@ -59,6 +63,8 @@ The n-th element of vector x is accessed by `x[n]`
 
 ```{r}
 string_vector[2]
+string_vector[c(2, 3)]
+
 ```
 
 ### Dataframes
@@ -77,13 +83,20 @@ example_df[ ,2]
 example_df[ ,'second_column']
 example_df$second_column
 
+example_df$second_column
+
 ```
 
 You can also access multiple columns passing a vector with column names, column indices, or boolean vector. The output is then a dataframe.
 
 ```{r}
+example_df[3, 'third_column'] <- 5
+example_df[3, 'third_column'] = 5
+
+example_df[c(2,3), 'third_column'] <- c(4, 5)
+
 example_df[ ,c(2, 3)]
-example_df[ ,c('second_column', 'third_column')]
+example_df[ ,c('third_column', 'second_column')]
 example_df[ ,c(FALSE, TRUE, TRUE)]
 
 ```
@@ -94,6 +107,10 @@ The same applies to accessing rows
 example_df[c(2, 3), ]
 example_df[c(FALSE, TRUE, TRUE), ]
 
+```
+
+```{r}
+example_df[example_df$first_column == 'two',]
 ```
 
 ### Lists
@@ -132,19 +149,27 @@ cool_named_list <- list('first el.' = 55,
 cool_named_list[['second el.']]
 
 ```
-You can combine the two ways
-```{r}
-cool_named_list[['third el.']][[2]]
-```
 
+You can combine the two ways
+
+```{r}
+cool_named_list[['third el.']] [[2]]
+```
 
 ## Basic econometrics in R
 
 To estimate basic linear regression of form $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon$ use `lm(y ~ x_1 + x_2, data)`.
 
 ```{r}
+swiss
+```
+
+```{r}
 data("swiss")
+
+
 basic_regression <- lm(Infant.Mortality ~ Fertility + Education +  Catholic + Agriculture, data = swiss)
+
 summary(basic_regression)
 ```
 
@@ -179,7 +204,12 @@ Both packages also support SE clustering (more on that in some future ES).
 
 For regression tables, I would recommend [modelsummary package](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) (it can output html, latex, markdown, or gt formats) but there are a lot of options out there. Stargazer package is also popular for output to latex but it is not maintained and there might not be compatibility with some model formats.
 
-## Inroduction to Tidyverse
+```{r eval=FALSE}
+library(stargazer)
+stargazer(basic_regression, basic_regression)
+```
+
+## Introduction to Tidyverse
 
 The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.
 
@@ -191,7 +221,7 @@ Here is a comparison of a few common operations done in tidyverse and base R (ta
 library(tidyverse)
 # Subseting dataframe
 # Tidyverse
-swiss_filter <- filter(swiss, Catholic < 5)
+swiss_filter <- filter(swiss, Catholic < 5, Education > 10)
 # Base R
 swiss_filter <-	swiss[which(swiss$Catholic < 5), , drop = FALSE]
 
@@ -216,6 +246,7 @@ The pipe ( %\>% ) makes the object before it the first argument of the function 
 
 ```{r}
 swiss_filter <- swiss %>%  filter(Catholic < 5)
+#   filter(swiss, Catholic < 5)
 
 ```
 

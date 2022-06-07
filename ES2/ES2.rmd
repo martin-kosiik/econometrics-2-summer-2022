@@ -22,17 +22,21 @@ head(Guns)
 ## 1)
 
 ```{r}
-years  <- length(levels(Guns$year))
+years  <- length(unique(Guns$year))
 years
-states <- length(levels(Guns$state))
+states <- length(unique(Guns$state))
 states
-ifelse(length(Guns$year)==years*states, "Panel is balanced", "Panel is unbalanced")
+ifelse(nrow(Guns)==years*states, "Panel is balanced", "Panel is unbalanced")
 
 ```
 
 ## 2)
 Pooled OLS with homoskedastic SE
 ```{r}
+# Base R
+pooled_ols_homosk <- lm(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns)
+
+# fixest
 pooled_ols_homosk <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male, data = Guns)
 summary(pooled_ols_homosk)
 ```
@@ -57,15 +61,21 @@ summary(pooled_ols_cluster)
 
 ```{r}
 # One-way Fixed Effects 
-fe_one <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male | state, data = Guns,
+fe_one <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male | state,
+                data = Guns,
                            ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
+
+summary(fe_one)
 
 # Least Square Dummy Variable Approach
-LSDV <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male + state, data = Guns,
+LSDV <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male + state,
+              data = Guns,
                            ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
 
 
-ifelse(all.equal(fe_one$coefficients, LSDV$coefficients[2:(length(fe_one$coefficients)+1)]), "Coefficients are the same",
+summary(LSDV)
+
+ifelse(all.equal(fe_one$coefficients, LSDV$coefficients[2:(length(fe_one$coefficients)+1)] ), "Coefficients are the same",
        "Coefficients are different")
 
 # you can also print them
@@ -81,8 +91,15 @@ $$F = \frac{(SSR_{\text{restricted}} - SSR_{\text{unrestricted}})/q}{SSR_{\text{
 #install.packages('plm')
 #pFtest(fe_one, pooled_ols_homosk)
 
-#fe_one$nobs
-#fe_one$ssr
+
+
+add <- function(one = 1, two){
+  output = one + two
+  return(output)
+}
+
+add(5,8)
+
 
 f_test <- function(restr_model, unrest_model){
  # q <-  unrest_model$fixef_sizes
@@ -108,7 +125,9 @@ We reject the null.
 
 ## 7)
 ```{r}
-fe_twoway <- feols(log(violent) ~ I(law == "yes") +density + income + population + afam + cauc + male | state + year, data = Guns,
+# fixest package
+fe_twoway <- feols(log(violent) ~ I(law == "yes") +density + year*state  + income + population + afam + cauc + male |
+                     state + year, data = Guns,
                            ssc = ssc(adj = TRUE), panel.id = ~state + year, cluster = "state")
 
 f_test(fe_one, fe_twoway)
@@ -156,6 +175,7 @@ re_m <-lm(y~ law + density + income + population + afam + cauc + male, data = Gu
 summary(re_m)
 
 # One-way Random Effects model
+
 re <- plm(log(violent) ~ law + density + income + population + afam + cauc + male, data = Guns,
               index = c("state"), model = "random")
 summary(re)
