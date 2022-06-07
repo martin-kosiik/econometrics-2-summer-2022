@@ -6,28 +6,27 @@ output:
   html_document:
     toc: true
     toc_float: true
-
-
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ## R Fundamentals
+
 ### Packages
-You can install new packages using `install.packages()` function.
-The installed packages are loaded with `library()`.
+
+You can install new packages using `install.packages()` function. The installed packages are loaded with `library()`.
 
 ```{r warning=FALSE}
 #install.packages("here", repos = "http://cran.us.r-project.org")
 library(here)
 ```
 
-
 ### Objects
-Objects can be assigned with either `<-` or `=` operators. They have exatly the same effect, it is just the matter of style preference. 
+
+Objects can be assigned with either `<-` or `=` operators. They have exatly the same effect, it is just the matter of style preference.
+
 ```{r}
 string_object_1 <- "hello_world!"
 string_object_2 = "hello_world!"
@@ -35,6 +34,7 @@ string_object_2 = "hello_world!"
 string_object_1
 string_object_2
 ```
+
 Objects can be removed with `rm()` function.
 
 ```{r}
@@ -42,11 +42,11 @@ rm(string_object_1)
 #string_object_1
 ```
 
-To remove all objects, use `rm(list=ls())`. 
-
+To remove all objects, use `rm(list=ls())`.
 
 ### Vectors
-A sequence of objects of the same type (e.g., string, interger, float, boolean,  factor) forms a vector. 
+
+A sequence of objects of the same type (e.g., string, interger, float, boolean, factor) forms a vector.
 
 ```{r}
 string_vector <- c("one", "two", "three")
@@ -56,24 +56,31 @@ boolean_vector <- c(FALSE, TRUE, FALSE) # or alternatively c(F, T, F)
 ```
 
 The n-th element of vector x is accessed by `x[n]`
+
 ```{r}
 string_vector[2]
 ```
 
 ### Dataframes
+
 The vectors of the same length can be combined into a Dataframe
+
 ```{r}
 example_df <- data.frame(first_column = string_vector, second_column = integer_vector, third_column = float_vector)
 example_df
 ```
+
 There are several ways how to access a specific vector (column) of a dataframe
+
 ```{r}
 example_df[ ,2]
 example_df[ ,'second_column']
 example_df$second_column
 
 ```
+
 You can also access multiple columns passing a vector with column names, column indices, or boolean vector. The output is then a dataframe.
+
 ```{r}
 example_df[ ,c(2, 3)]
 example_df[ ,c('second_column', 'third_column')]
@@ -82,6 +89,7 @@ example_df[ ,c(FALSE, TRUE, TRUE)]
 ```
 
 The same applies to accessing rows
+
 ```{r}
 example_df[c(2, 3), ]
 example_df[c(FALSE, TRUE, TRUE), ]
@@ -89,6 +97,7 @@ example_df[c(FALSE, TRUE, TRUE), ]
 ```
 
 ### Lists
+
 Lists are objects that can contain any kind of objects in them (strings, floats, booleans, another lists, ...)
 
 ```{r}
@@ -96,22 +105,57 @@ cool_list <- list(55, 'cool item', list(TRUE, 6.626262))
 cool_list
 ```
 
+You can access the elements by their index
+
+```{r}
+cool_list[1]
+
+```
+
+```{r}
+cool_list[[1]]
+
+```
+
+Note the subtle difference between the two: in the first case the output is a list with a single element 55, whereas in the second case the output is only 55.
+
+You can also name the elements of list and them access them by their name
+
+```{r}
+cool_named_list <- list('first el.' = 55, 
+                        'second el.' = 'cool item',
+                        'third el.' = list(TRUE, 6.626262))
+
+```
+
+```{r}
+cool_named_list[['second el.']]
+
+```
+You can combine the two ways
+```{r}
+cool_named_list[['third el.']][[2]]
+```
+
 
 ## Basic econometrics in R
-To estimate basic linear regression of form $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon$ use `lm(y ~ x_1 + x_2, data)`. 
+
+To estimate basic linear regression of form $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon$ use `lm(y ~ x_1 + x_2, data)`.
+
 ```{r}
 data("swiss")
 basic_regression <- lm(Infant.Mortality ~ Fertility + Education +  Catholic + Agriculture, data = swiss)
 summary(basic_regression)
 ```
 
-By default, `lm()` outputs standard errors assuming homoskedasticity. You almost never want to use them. 
+By default, `lm()` outputs standard errors assuming homoskedasticity. You almost never want to use them.
 
-There are several ways how to obtain heteroskedasticity-robust SE. 
+There are several ways how to obtain heteroskedasticity-robust SE.
 
 First, `estimatr` package has `lm_robust()` function whose `se_type` argument can be either "classical", "HC0", "HC1" (stata), "HC2", or "HC3".
 
 See [this](https://declaredesign.org/r/estimatr/articles/mathematical-notes.html) for the mathematical details.
+
 ```{r}
 # install.packages('estimatr', repos = "http://cran.us.r-project.org")
 library(estimatr)
@@ -119,8 +163,8 @@ fancy_regression <- lm_robust(Infant.Mortality ~ Fertility + Education +  Cathol
 summary(fancy_regression)
 ```
 
-Alternatively, in `fixest` package you can use `feols()` function and passing in `vcov = "hetero"` to get HC0 (White) SE. Additionally, you can also apply the small sample correction by passing in `ssc = ssc(adj = TRUE)`.
-Learn more [here](https://lrberge.github.io/fixest/articles/standard_errors.html) 
+Alternatively, in `fixest` package you can use `feols()` function and passing in `vcov = "hetero"` to get HC0 (White) SE. Additionally, you can also apply the small sample correction by passing in `ssc = ssc(adj = TRUE)`. Learn more [here](https://lrberge.github.io/fixest/articles/standard_errors.html)
+
 ```{r}
 # install.packages('fixest', repos = "http://cran.us.r-project.org")
 library(fixest)
@@ -131,14 +175,18 @@ summary(even_fancier_regression)
 
 Both packages also support SE clustering (more on that in some future ES).
 
+## Regression tables
+
+For regression tables, I would recommend [modelsummary package](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) (it can output html, latex, markdown, or gt formats) but there are a lot of options out there. Stargazer package is also popular for output to latex but it is not maintained and there might not be compatibility with some model formats.
 
 ## Inroduction to Tidyverse
+
 The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.
 
-A common feature of most tidyverse is that they take the dataframe as the first argument. 
+A common feature of most tidyverse is that they take the dataframe as the first argument.
 
-Here is a comparison of a few common operations done in tidyverse and base R (taken from [here](https://dplyr.tidyverse.org/articles/base.html)).
-Also notice that 
+Here is a comparison of a few common operations done in tidyverse and base R (taken from [here](https://dplyr.tidyverse.org/articles/base.html)). Also notice that
+
 ```{r warning=FALSE, message=FALSE}
 library(tidyverse)
 # Subseting dataframe
@@ -162,11 +210,9 @@ swiss_new_col$new_col <- swiss_new_col$Examination + swiss_new_col$Education
 
 ```
 
+Another important feature of Tidyverse is the use of pipes ( %\>% ). It does have only stylistic function (i.e., it makes the code more readable).
 
-
-Another important feature of Tidyverse is the use of pipes ( %>% ). It does have only stylistic function (i.e., it makes the code more readable).
-
-The pipe ( %>% ) makes the object before it the first argument of the function after it. For example
+The pipe ( %\>% ) makes the object before it the first argument of the function after it. For example
 
 ```{r}
 swiss_filter <- swiss %>%  filter(Catholic < 5)
@@ -176,15 +222,18 @@ swiss_filter <- swiss %>%  filter(Catholic < 5)
 What?? That's it???!!! Why would anyone want to use it?
 
 Well suppose you wanted several operations on the dataframe. Without the pipe you could write
+
 ```{r}
 swiss_final <- mutate( arrange( filter(swiss, Catholic < 5), Catholic), new_col = Examination + Education)
 ```
+
 This looks rather chaotic and messy. But with pipes the same expression now becomes
+
 ```{r}
 swiss_final <- swiss %>% 
   filter(Catholic < 5) %>% 
   arrange(Catholic) %>% 
   mutate(new_col = Examination + Education)
 ```
-This, arguably, looks much more readable. We see that first we apply filter then arrange and then mutate. 
 
+This, arguably, looks much more readable. We see that first we apply filter then arrange and then mutate.
