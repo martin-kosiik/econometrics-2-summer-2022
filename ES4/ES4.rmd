@@ -1,0 +1,90 @@
+---
+title: "ES4"
+author: "Martin Kosík"
+date: '2022-06-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# install.packages("plm")
+# install.packages("texreg")
+# install.packages("modelsummary")
+
+library(plm)
+library(texreg)
+# library(modelsummary)
+```
+
+For more info on dynamic panel data models see Cameron and Trivedi, page 763 (22.5) or [Hansen](https://www.ssc.wisc.edu/~bhansen/econometrics/Econometrics.pdf) page 639 (663 in the pdf document).
+
+## 1)
+
+Load data and inspect them
+```{r}
+data("EmplUK", package = "plm")
+head(EmplUK)
+```
+
+Run Arellano-Bond estimator
+```{r}
+a1 <- pgmm(log(emp) ~ lag(log(emp), 1:2) + lag(log(wage), 0:1)
+          + lag(log(capital), 0:2)+lag(log(output), 0:2) | lag(log(emp), 2:9),
+          data = EmplUK, effect = "twoways", model = "onestep")
+
+
+
+a2 <- pgmm(log(emp) ~ lag(log(emp), 1:2) + lag(log(wage), 0:1)
+           + lag(log(capital), 0:2)+lag(log(output), 0:2) | lag(log(emp), 2:9),
+           data = EmplUK, effect = "twoways", model = "twosteps")
+
+
+b <- pgmm(log(emp) ~ lag(log(emp), 1:2) + lag(log(wage), 0:1)
+           + log(capital)+lag(log(output), 0:1) | lag(log(emp), 2:9),
+           data = EmplUK, effect = "twoways", model = "twosteps")
+
+
+
+
+screenreg(list(a1 = a1, a2 = a2, b = b),
+          digits = 3, omit.coef = "(Intercept)")
+
+#modelsummary(list(a1 = a1, a2 = a2, b = b),
+#          digits = 3, omit.coef = "(Intercept)")
+
+
+```
+
+## 2)
+This corresponds to Anderson-Hsiao estimator which is less efficient. We need at least 3 time periods. 
+```{r}
+AH <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
+             lag(log(capital), 0:1) | lag(log(emp), 2),        
+           data = EmplUK, effect = "twoways", model = "onestep")
+
+summary(AH)
+
+```
+## 3)
+
+In case of strictly exogenous regressors we can use any number of lag and leads of $x_{it}$ as instruments for $\Delta y_{it-1}$ whereas in case of pre-determined regressors we can use only the lags of $x_{it}$.
+```{r}
+# Arellano-Bond one-step estimator with predetermined regressors
+GMM_DIF <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
+             lag(log(capital), 0:1) | lag(log(emp), 2:9) +
+             lag(log(wage), 2:9) + lag(log(capital), 2:9),        
+           data = EmplUK, effect = "twoways", model = "onestep")
+summary(GMM_DIF)
+
+
+# Blundell-Bond one-step systems GMM estimator
+GMM_SYS <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
+                        lag(log(capital), 0:1) | lag(log(emp), 2:9) +
+                        lag(log(wage), 2:9) + lag(log(capital), 2:9),        
+                      data = EmplUK, effect = "twoways", model = "onestep", 
+                      transformation = "ld")
+
+summary(GMM_SYS, robust = TRUE)
+
+```
+
