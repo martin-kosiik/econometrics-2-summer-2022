@@ -496,10 +496,13 @@ summary(AH)</code></pre>
 </div>
 <div id="section-2" class="section level2">
 <h2>3)</h2>
-<p>In case of strictly exogenous regressors we can use any number of lag
-and leads of <span class="math inline">\(x_{it}\)</span> as instruments
-for <span class="math inline">\(\Delta y_{it-1}\)</span> whereas in case
-of pre-determined regressors we can use only the lags of <span class="math inline">\(x_{it}\)</span>.</p>
+<p>In case of strictly exogenous regressors we can use <span class="math inline">\(\Delta x_{it}\)</span> and any number of lag and
+leads of it and <span class="math inline">\(x_{it}\)</span> as
+instruments for <span class="math inline">\(\Delta y_{it-1}\)</span>
+whereas in case of pre-determined regressors we can use only the lags of
+<span class="math inline">\(x_{it}\)</span> (we have to instrument for
+<span class="math inline">\(\Delta x_{it}\)</span> as it is endogenous)
+.</p>
 <pre class="r"><code># Arellano-Bond one-step estimator with predetermined regressors
 GMM_DIF &lt;- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
              lag(log(capital), 0:1) | lag(log(emp), 2:9) +
