@@ -21,12 +21,14 @@ For more info on dynamic panel data models see Cameron and Trivedi, page 763 (22
 ## 1)
 
 Load data and inspect them
+
 ```{r}
 data("EmplUK", package = "plm")
 head(EmplUK)
 ```
 
 Run Arellano-Bond estimator
+
 ```{r}
 a1 <- pgmm(log(emp) ~ lag(log(emp), 1:2) + lag(log(wage), 0:1)
           + lag(log(capital), 0:2)+lag(log(output), 0:2) | lag(log(emp), 2:9),
@@ -56,7 +58,9 @@ screenreg(list(a1 = a1, a2 = a2, b = b),
 ```
 
 ## 2)
-This corresponds to Anderson-Hsiao estimator which is less efficient. We need at least 3 time periods. 
+
+This corresponds to Anderson-Hsiao estimator which is less efficient. We need at least T = 3 + number coefs. to estimate of time periods.
+
 ```{r}
 AH <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
              lag(log(capital), 0:1) | lag(log(emp), 2),        
@@ -65,9 +69,11 @@ AH <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
 summary(AH)
 
 ```
+
 ## 3)
 
 In case of strictly exogenous regressors we can use any number of lag and leads of $x_{it}$ as instruments for $\Delta y_{it-1}$ whereas in case of pre-determined regressors we can use only the lags of $x_{it}$.
+
 ```{r}
 # Arellano-Bond one-step estimator with predetermined regressors
 GMM_DIF <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
@@ -87,4 +93,3 @@ GMM_SYS <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
 summary(GMM_SYS, robust = TRUE)
 
 ```
-
