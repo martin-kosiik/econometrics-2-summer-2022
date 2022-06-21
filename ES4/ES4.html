@@ -458,7 +458,7 @@ screenreg(list(a1 = a1, a2 = a2, b = b),
 <div id="section-1" class="section level2">
 <h2>2)</h2>
 <p>This corresponds to Anderson-Hsiao estimator which is less efficient.
-We need at least T = 3 + number coefs. to estimate of time periods.</p>
+We need at least T = 3 of time periods.</p>
 <pre class="r"><code>AH &lt;- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
              lag(log(capital), 0:1) | lag(log(emp), 2),        
            data = EmplUK, effect = &quot;twoways&quot;, model = &quot;onestep&quot;)

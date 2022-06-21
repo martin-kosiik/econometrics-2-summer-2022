@@ -59,7 +59,7 @@ screenreg(list(a1 = a1, a2 = a2, b = b),
 
 ## 2)
 
-This corresponds to Anderson-Hsiao estimator which is less efficient. We need at least T = 3 + number coefs. to estimate of time periods.
+This corresponds to Anderson-Hsiao estimator which is less efficient. We need at least T = 3 of time periods.
 
 ```{r}
 AH <- pgmm(log(emp) ~ lag(log(emp), 1)+ lag(log(wage), 0:1) +
